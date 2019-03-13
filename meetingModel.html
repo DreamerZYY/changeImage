@@ -1,0 +1,233 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>会议预约模板</title>
+    <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+    <style>
+        * {
+            margin:0;
+            padding:0;
+        }
+        body,html {
+            height:100%;
+            width:100%;
+            overflow:hidden;
+            font-family:'Microsoft YaHei';
+        }
+        .bgImage {
+            position:absolute;
+            z-index:1;
+        }
+        .bgDiv2 {
+            display:none;
+        }
+        .meetingContent {
+            width:100%;
+            height:100%;
+            position:absolute;
+            z-index:2;  
+        }
+        .toplogo {
+            background:url("images/white.png");
+            height:15%;
+            width:100%;
+            background-size:100% 100%;
+            overflow:auto;
+        }
+       
+        .toplogo img {
+            display: block;
+            margin: 0 auto;
+            height: 70%;
+            margin-top: 22px;
+
+        }
+        .meeting {
+            height:65%;
+            width:70%;
+            margin-left:15%;
+            margin-top:5%;
+            background:url("images/white.png");
+            background-size:100% 100%;
+            overflow: hidden;
+        }
+        .mContent {
+            width:70%;
+            height:80%;
+            margin-left:15%;
+        }
+        .mContent .meetingStyle {
+            font-size:50px;
+            /*font-size:3rem;*/
+            overflow:hidden;
+        }
+        .roomName {
+            text-align:center;
+            font-size:80px;
+            /*font-size:5rem;*/
+            font-weight:700;
+            /*padding:15px 0;*/
+        }
+        .coomnName {
+            display:block;
+            float:left;
+            width:260px;
+            text-align:right;
+        }
+        .mTime {
+            display:block;
+            float:left;
+        }
+        .mName {
+            display:block;
+            float:left;
+        }
+        .empty {
+            display:none;
+            text-align:center;
+        }
+    </style>
+</head>
+<body>
+    <div  class="bgDiv1 bgImage">
+        <img src="images/1.jpg"  id="divFirst"/>
+    </div>
+     <div  class="bgDiv2 bgImage">
+        <img src="images/2.jpg"  id="divSecond"/><!--images/2.jpg-->
+    </div>
+    <div class="meetingContent">
+        <div class="toplogo">
+            <img src="images/LOGO.png" />
+        </div>
+        <div class="meeting">
+            <div class="mContent">
+                <p class="roomName" id="roomName">第一会议室</p>
+                <p class="meetingName meetingStyle" >
+                    <span class="coomnName" >会议名称：</span>
+                    <span class="mName">部门会议部门会议部门议</span>
+                </p>
+                <p class="meetingTime meetingStyle">
+                    <span class="coomnName">会议时间：</span>
+                    <span class="mTime">
+                        <span class="startTime" style="display:block;">10:00</span>
+                        <span class="endTime" style="display:block;">11:30</span>
+                    </span>
+                    
+                </p>
+                <p class="ceratePepple meetingStyle">
+                    <span class="coomnName" style="letter-spacing:15px;margin-left:15px;">召集人：</span>
+                    <span class="cPeople">大部门</span>
+                </p>
+           </div>
+            <div class="empty  roomName">
+                空闲
+            </div>
+        </div>
+    </div>
+<script>
+    $(function () {
+        getData();
+        setInterval(" getData()", 1*60*1000);
+    })
+   
+    var imgs = ["1.jpg", "2.jpg", "3.jpg", "4.jpg", "5.jpg", "6.jpg", "7.jpg", "8.jpg", "9.jpg"];    //（设定想要显示的图片）
+    var x = 0;
+    var time1 = 15;
+    function time() {
+        x++;
+        x = x % imgs.length;         //         超过2则取余数，保证在数组中循环
+        if ($(".bgDiv1").css("display") == "block") {
+            $(".bgDiv2").fadeIn("slow");
+            $(".bgDiv1").fadeOut("slow");
+            $("#divSecond").attr("src", "images/" + imgs[x]);
+           
+        } else {
+            $(".bgDiv1").fadeIn("slow");
+            $(".bgDiv2").fadeOut("slow");
+            $("#divFirst").attr("src", "images/" + imgs[x]);
+        }
+        
+    }
+    setInterval("time()", 1000*10);
+    window.onload = function () {
+        
+    }
+    function getData() {
+        $.ajax({
+            url: "data.txt?utf8=1",
+            type: "get",
+            dataType: "text",
+            //data: {
+            //    RoomID:"13"
+            //},
+            success: function (data) {
+               
+                if (eval("(" + data + ")").Table.length <= 0) {
+                    $(".empty").show();
+                    $(".mContent").hide();
+                   
+                    changeStyle();
+                    $(".empty").css("lineHeight", $(".meeting").height() + "px");
+                } else {
+                  
+                    var data = eval("(" + data + ")");
+                    var allData = data.Table[0];
+                    var meetingName = allData.NAME;
+                    var startTime = allData.BEGINDATE.replace(/-/g, "/") + " " + allData.BEGINTIME;
+                    var endTime = allData.ENDDATE.replace(/-/g, "/") + " " + allData.ENDTIME;
+                    var roonName = allData.NAME1;
+                    var caller = allData.LASTNAME;
+                    
+                    $("#roomName").html(roonName);
+                    $(".mName").html(meetingName);
+                    $(".startTime").html(startTime);
+                    $(".endTime").html(endTime);
+                    $(".cPeople").html(caller);
+                    timeChange(startTime);
+                    changeStyle();
+                }
+                
+            }, error: function (data1,data2,data3) {
+                console.log(data1+"<br>"+data2+"<br>"+data3)
+            }
+        })
+    }
+    function changeStyle() {
+        if (document.documentElement.clientWidth < 1900) {
+            $(".mContent .meetingStyle").css("fontSize", "40px");
+            $(".roomName").css("fontSize", "65px");
+            $(".coomnName").css("width", "220px");
+            $(".mContent").css("width", "80%");
+            $(".mContent").css("marginLeft", "10%");
+            $(".mName").css("width", $(".meetingStyle").width() - 228);
+            $(".mTime").css("width", $(".meetingStyle").width() - 228);
+            $(".ceratePepple .coomnName").css("letterSpacing", "10px");
+        } else {
+            $(".mName").css("width", $(".meetingStyle").width() - 265);
+            $(".mTime").css("width", $(".meetingStyle").width() - 265);
+        }
+        $(" .toplogo img").css("marginTop", ($(" .toplogo").height() - $(" .toplogo img").height()) / 2);
+        $(".meeting").css("marginTop", ($("body").height() - $(".meeting").height() - $(".toplogo").height()) / 2);
+        $(" .mContent").css("marginTop", ($(".meeting").height() - $(" .mContent").height()) / 2);
+        $(".meetingStyle").css("marginTop", ($(".mContent").height() - $(".roomName").height() - $(".mName").height() - $(".mTime").height() - $(".coomnName").height()) / 4);
+
+
+    }
+    function timeChange(startTime) {
+        var date1 = new Date();
+        var time1 = Date.parse(date1);
+        var date2 = startTime;
+        var time2 = Date.parse(date2);
+        if (time2 - time1 <= 1000 * 60 * 15) {
+            $(".empty").hide();
+            $(".mContent").show();
+        } else {
+            $(".empty").show();
+            $(".mContent").hide();
+        }
+    }
+</script>
+</body>
+</html>
